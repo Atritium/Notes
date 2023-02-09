@@ -1501,6 +1501,210 @@ public class Solution {
 }
 ```
 
+## 2.8
+
+### 47 礼物的最大价值
+
+#### 动态规划
+
+```c#
+public class Solution {
+    public int MaxValue(int[][] grid) {
+        int[,] dp = new int[grid.Length,grid[0].Length];
+        dp[0,0] = grid[0][0];
+        for(int i=0;i<grid.Length;i++){
+            for(int j=0;j<grid[0].Length;j++){
+                if(i==0&&j==0) continue;
+                if(i==0) dp[i,j] = dp[i,j-1]+grid[i][j];
+                else if(j==0) dp[i,j] = dp[i-1,j]+grid[i][j];
+                else dp[i,j] = Math.Max(dp[i-1,j],dp[i,j-1])+grid[i][j];
+            }
+        }
+        return dp[grid.Length-1,grid[0].Length-1];
+    }
+}
+```
+
+### 48 最长不含重复字符的子字符串
+
+#### 滑动窗口
+
+```c#
+public class Solution {
+    public int LengthOfLongestSubstring(string s) {
+        Dictionary<char,int> dict = new Dictionary<char,int>();
+        int res = 0;
+        int left = 0;
+        for(int i=0;i<s.Length;i++){
+            if(dict.ContainsKey(s[i])&&dict[s[i]]==1){
+                res = Math.Max(res,(i-left));
+                while(s[left]!=s[i]){
+                    dict.Remove(s[left]);
+                    left++;
+                }
+                left++;
+            }else{
+                dict.Add(s[i],1);
+            }
+        }
+        return Math.Max(res,(s.Length-left));
+    }
+}
+```
+
+### 49 丑数
+
+#### 优先队列
+
+```c#
+public class Solution {
+    public int NthUglyNumber(int n) {
+        PriorityQueue<long,long> queue = new PriorityQueue<long,long>();
+        queue.Enqueue(1,1);
+        HashSet<long> set = new HashSet<long>();
+        set.Add(1);
+        int[] state = new int[]{2,3,5};
+        int res = 0;
+        while(res<n-1){
+            long temp = queue.Dequeue();
+            res++;
+            foreach(int item in state){
+                long num = item*temp;
+                if(!set.Contains(num)){
+                    set.Add(num);
+                    queue.Enqueue(num,num);
+                }
+            }
+        }
+        return (int)queue.Peek();
+    }
+}
+```
+
+#### 动态规划*
+
+```c#
+public class Solution {
+    public int NthUglyNumber(int n) {
+        int[] dp = new int[n+1];
+        dp[1] = 1;
+        int p2 = 1,p3 = 1,p5 = 1;
+        for(int i=2;i<=n;i++){
+            int num2 = dp[p2]*2, num3 = dp[p3]*3, num5 = dp[p5]*5;
+            int min = Math.Min(Math.Min(num2,num3),num5);
+            dp[i] = min;
+            if(min==num2) p2++;
+            if(min==num3) p3++;
+            if(min==num5) p5++;
+        }
+        return dp[n];
+    }
+}
+```
+
+## 2.9
+
+### 50 第一个只出现一次的字符
+
+#### 队列
+
+```c#
+public class Solution {
+    public char FirstUniqChar(string s) {
+        int[] state = new int[26];
+        Queue<char> queue = new Queue<char>();
+        for(int i=0;i<s.Length;i++){
+            int tmp = s[i]-'a';
+            if(state[tmp]==0) queue.Enqueue(s[i]);
+            else if(queue.Count>0&&queue.Peek()==s[i]) queue.Dequeue();
+            state[tmp]++;
+        }
+        while(queue.Count!=0){
+            int tmp = queue.Peek()-'a';
+            if(state[tmp]==1) return queue.Peek();
+            queue.Dequeue();
+        }
+        return ' ';
+    }
+}
+```
+
+### 52 两个链表的第一个公共节点
+
+#### HashSet
+
+```c#
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public int val;
+ *     public ListNode next;
+ *     public ListNode(int x) { val = x; }
+ * }
+ */
+public class Solution {
+    public ListNode GetIntersectionNode(ListNode headA, ListNode headB) {
+        HashSet<ListNode> set = new HashSet<ListNode>();
+        while(headA!=null&&headB!=null){
+            if(headA==headB) return headA;
+            if(set.Contains(headA)) return headA;
+            if(set.Contains(headB)) return headB;
+            set.Add(headA);
+            set.Add(headB);
+            headA = headA.next;
+            headB = headB.next;
+        }
+        while(headA!=null){
+            if(set.Contains(headA)) return headA;
+            headA = headA.next;
+        }
+        while(headB!=null){
+            if(set.Contains(headB)) return headB;
+            headB = headB.next;
+        }
+        return null;
+    }
+}
+```
+
+#### 双指针
+
+```c#
+public class Solution {
+    public ListNode GetIntersectionNode(ListNode headA, ListNode headB) {
+        if(headA==null||headB==null) return null;
+        ListNode left = headA;
+        ListNode right = headB;
+        while(left!=right){
+            left = left==null? headB:left.next;
+            right = right==null? headA:right.next;
+        }
+        return left;
+    }
+}
+```
+
+### 53-Ⅰ 在排序数组中查找数字Ⅰ
+
+#### 二分查找找左右边界
+
+```c#
+public class Solution {
+    public int Search(int[] nums, int target) {
+        return BinarySearch(nums,target)-BinarySearch(nums,target-1);
+    }
+    private int BinarySearch(int[] nums,int target){
+        int left = 0,right = nums.Length-1;
+        while(left<=right){
+            int mid = (left+right)/2;
+            if(nums[mid]<=target) left = mid+1;
+            else right = mid-1;
+        }
+        return left;
+    }
+}
+```
+
 
 
 # 每日一题
@@ -1737,6 +1941,80 @@ public class Solution {
 }
 ```
 
+## 2.1 
+
+### 2325 解密消息
+
+```c#
+public class Solution {
+    public string DecodeMessage(string key, string message) {
+        Dictionary<char,char> dict = new Dictionary<char,char>();
+        int n = 0;
+        for(int i=0;i<key.Length;i++){
+            if(key[i]==' ') continue;
+            if(!dict.ContainsKey(key[i])){
+                dict.Add(key[i],(char)('a'+n));
+                n++;   
+            }
+        } 
+        string res = "";
+        for(int i=0;i<message.Length;i++){
+            if(message[i]==' ') res+=" ";
+            else res+=dict[message[i]];
+        }
+        return res;
+    }
+}
+```
+
+## 2.2 
+
+### 1129 颜色交替的最短路径
+
+```c#
+public class Solution {
+    public int[] ShortestAlternatingPaths(int n, int[][] redEdges, int[][] blueEdges) {
+        //声明一个List<int>类型的二维数组，类比int[,] res = new int[,];
+        //eages[0,1]：代表1的红色连接边，eages[1,1]：代表1的蓝色连接边
+        List<int>[,] eages = new List<int>[2,n]; 
+        for(int i=0;i<2;i++){
+            for(int j=0;j<n;j++){
+                eages[i,j] = new List<int>();
+            }
+        }
+        foreach(int[] item in redEdges) eages[0,item[0]].Add(item[1]);
+        foreach(int[] item in blueEdges) eages[1,item[0]].Add(item[1]);
+        //dis[a,b]：a代表节点，b代表最后一条边的颜色，dis[a,b]代表0到a且最后一条边为b颜色时的距离
+        int[,] dis = new int[n,2];
+        for(int i=0;i<n;i++){
+            dis[i,0] = int.MaxValue;
+            dis[i,1] = int.MaxValue;
+        }
+        dis[0,0] = 0;
+        dis[0,1] = 0;
+        //[a,b]：a代表当前节点，b代表最后一条边颜色
+        Queue<int[]> queue = new Queue<int[]>();
+        queue.Enqueue(new int[]{0,0});
+        queue.Enqueue(new int[]{0,1});
+        while(queue.Count!=0){
+            int[] tmp = queue.Dequeue();
+            int cur = tmp[0],color = tmp[1];
+            foreach(int item in eages[1-color,cur]){
+                if(dis[item,1-color]!=int.MaxValue) continue;
+                dis[item,1-color] = dis[cur,color]+1;
+                queue.Enqueue(new int[]{item,1-color});
+            }
+        }
+        int[] res = new int[n];
+        for(int i=1;i<n;i++){
+            res[i] = Math.Min(dis[i,0],dis[i,1]);
+            if(res[i]==int.MaxValue) res[i] = -1;
+        }
+        return res;
+    }
+}
+```
+
 # Hot100
 
 ## 1.28
@@ -1851,5 +2129,689 @@ public class Solution {
 }
 ```
 
-## 1.30
+## 1.31 
+
+### 136 只出现一次的数字*
+
+该题基于两条结论：
+
+- 任何数异或自身等于0。
+- 任何数异或0等于自身。
+
+那么当数组内的所有数字异或，两两组合为0，最后结果会是数目为1的那个数。
+
+```c#
+public class Solution {
+    public int SingleNumber(int[] nums) {
+        int res = 0;
+        for(int i=0;i<nums.Length;i++) res^=nums[i];
+        return res;
+    }
+}
+```
+
+## 2.1 
+
+### 5 最长回文子串*
+
+```c#
+public class Solution {
+    //中心扩散法
+    private string s;
+    public string LongestPalindrome(string s) {
+        this.s = s;
+        int len = 0;
+        int num = 0;
+        for(int i=0;i<s.Length;i++){
+            int temp = Math.Max(ExpandOnCenter(i,i,0)-1,ExpandOnCenter(i,i+1,0));
+            if(temp>len){
+                len = temp;
+                num = i;
+            }
+        }
+        if(len%2==1) return s[(num-len/2)..(num+len/2+1)];
+        return s[(num-(len-2)/2)..(num+len/2+1)];
+    }
+    private int ExpandOnCenter(int left,int right,int res){
+        if(left<0||right>=s.Length||s[left]!=s[right]) return res;
+        res+=2;
+        return ExpandOnCenter(left-1,right+1,res);
+    }
+}
+```
+
+### 11 盛最多水的容器*
+
+S=Math.Min(height(left),height(right))*(right-left);
+
+设双指针left=0,right=height.Length-1;
+
+向内移动指针，(right-left)↓，那么如果想要S增大，那么只能选择向内移动短板，因为移动长板的话，S一定减小。
+
+```c#
+public class Solution {
+    public int MaxArea(int[] height) {
+        int left = 0;
+        int right = height.Length-1;
+        int res = 0;
+        while(left<right){
+            res = Math.Max(res,Math.Min(height[left],height[right])*(right-left));
+            if(height[left]<height[right]) left++;
+            else right--;
+        }
+        return res;
+    }
+}
+```
+
+### 17 电话号码的字母组合
+
+回溯
+
+```c#
+public class Solution {
+    private IList<string> list;
+    private Dictionary<char,List<char>> dict;
+    private string digits;
+    public IList<string> LetterCombinations(string digits) {
+        this.digits = digits;
+        list = new List<string>();
+        if(digits=="") return list;
+        dict = new Dictionary<char,List<char>>();
+        dict.Add('2',new List<char>(){'a','b','c'});
+        dict.Add('3',new List<char>(){'d','e','f'});
+        dict.Add('4',new List<char>(){'g','h','i'});
+        dict.Add('5',new List<char>(){'j','k','l'});
+        dict.Add('6',new List<char>(){'m','n','o'});
+        dict.Add('7',new List<char>(){'p','q','r','s'});
+        dict.Add('8',new List<char>(){'t','u','v'});
+        dict.Add('9',new List<char>(){'w','x','y','z'});
+        DFS(0,"");
+        return list;
+    }
+    private void DFS(int n,string str){
+        if(n>=digits.Length){
+            string temp = string.Copy(str);
+            list.Add(temp);
+            return;
+        }
+        for(int i=0;i<dict[digits[n]].Count;i++){
+            str+=dict[digits[n]][i];
+            DFS(n+1,str);
+            str = str.Remove(str.Length-1);
+        }
+    }
+}
+```
+
+## 2.2 
+
+### 23 合并K个升序链表
+
+#### 一一合并
+
+```c#
+public class Solution {
+    public ListNode MergeKLists(ListNode[] lists) {
+        ListNode head = null;
+        ListNode node = null;
+        while(true){
+            bool state = false;
+            int min = 0;
+            for(int i=0;i<lists.Length;i++){
+                if(lists[i]==null) continue;
+                state = true;
+                if(lists[min]==null||(lists[i].val<lists[min].val)) min = i;
+            }
+            if(!state) break;
+            if(head==null){
+                head = lists[min];
+                lists[min] = lists[min].next;
+                node = head;
+            }else{
+                node.next = lists[min];
+                node = node.next;
+                lists[min] = lists[min].next;
+            }
+        }
+        return head;
+    }
+}
+```
+
+#### 优先队列
+
+##### 1
+
+```c#
+public class Solution {
+    public ListNode MergeKLists(ListNode[] lists) {
+        PriorityQueue<ListNode,int> queue = new PriorityQueue<ListNode,int>();
+        foreach(ListNode item in lists){
+            if(item!=null) queue.Enqueue(item,item.val);
+        }
+        ListNode head = new ListNode(0);
+        ListNode node = head;
+        while(queue.Count>0){
+            ListNode temp = queue.Dequeue();
+            Console.WriteLine(temp.val);
+            node.next = temp;
+            node = node.next;
+            if(temp.next!=null) queue.Enqueue(temp.next,temp.next.val);
+        }
+        return head.next;
+    }
+}
+```
+
+##### 2 
+
+```c#
+public class Solution {
+    public ListNode MergeKLists(ListNode[] lists) {
+        PriorityQueue<ListNode,int> queue = new PriorityQueue<ListNode,int>();
+        foreach(ListNode item in lists){
+            ListNode temp = item;
+            while(temp!=null){
+                queue.Enqueue(temp,temp.val);
+                ListNode tmp = temp;          //断开原结点
+                temp = temp.next;
+                tmp.next = null;
+            }
+        }
+        ListNode head = new ListNode(0);
+        ListNode node = head;
+        while(queue.Count!=0){
+            node.next = queue.Dequeue();
+            node = node.next;
+        }
+        return head.next;
+    }
+}
+```
+
+### 31 下一个排列
+
+```c#
+public class Solution {
+    public void NextPermutation(int[] nums) {
+        bool state = false;
+        int left = -1;
+        int right = -1;
+        for(int i=nums.Length-1;i>0;i--){
+            for(int j=i-1;j>=0;j--){
+                if(nums[j]<nums[i]){
+                    state = true;
+                    if(j>left){
+                        left = j;
+                        right = i;
+                    }
+                    break;
+                }
+            }
+        }
+        if(state){
+            Swap(nums,left,right);
+            QuickSort(nums,left+1,nums.Length-1);
+        }else Array.Sort(nums);
+    }
+    private void Swap(int[] nums,int i,int j){
+        int temp = nums[i];
+        nums[i] = nums[j];
+        nums[j] = temp;
+    }
+    //快排
+    private void QuickSort(int[] nums,int left,int right){
+        if(left>=right) return;
+        int key = PartSort(nums,left,right);
+        QuickSort(nums,left,key-1);
+        QuickSort(nums,key+1,right);
+    }
+    private int PartSort(int[] nums,int left,int right){
+        int temp = nums[left];
+        while(left<right){
+            while(left<right&&nums[right]>=temp) right--;
+            nums[left] = nums[right];
+            while(left<right&&nums[left]<=temp) left++;
+            nums[right] = nums[left];
+        }
+        nums[left] = temp;
+        return left;
+    }
+}
+```
+
+## 2.3 
+
+### 32 最长有效括号*
+
+#### 动态规划
+
+```c#
+public class Solution {
+    //dp[i]：以i为结尾的最长字串长度
+    public int LongestValidParentheses(string s) {
+        int[] dp = new int[s.Length];
+        int res = 0;
+        for(int i=0;i<s.Length;i++){
+            if(i==0||s[i]=='(') continue;
+            if(s[i-1]=='('){
+                dp[i] = 2;
+                if(i-2>=0) dp[i]+=dp[i-2];
+            }else{
+                int left = i-dp[i-1]-1;
+                if(left>=0&&s[left]=='('){
+                    dp[i] = dp[i-1]+2;
+                    if(left-1>=0) dp[i]+=dp[left-1];
+                }
+            }
+            res = Math.Max(res,dp[i]);
+        }
+        return res;
+    }
+}
+```
+
+#### 栈
+
+```c#
+public class Solution {
+    public int LongestValidParentheses(string s) {
+        Stack<int> stack = new Stack<int>();
+        stack.Push(-1);
+        int res = 0;
+        for(int i=0;i<s.Length;i++){
+            if(s[i]=='(') stack.Push(i);
+            else{
+                stack.Pop();
+                if(stack.Count==0){
+                    stack.Push(i);
+                }else{
+                    res = Math.Max(res,(i-stack.Peek()));
+                }
+            }
+        }
+        return res;
+    }
+}
+```
+
+#### 双指针+双遍历
+
+```c#
+public class Solution {
+    public int LongestValidParentheses(string s) {
+        int res = 0;
+        int left = 0;
+        int right = 0;
+        for(int i=0;i<s.Length;i++){
+            if(s[i]=='(') left++;
+            else right++;
+            if(left==right) res = Math.Max(res,left+right);
+            else if(right>left){
+                left = 0;
+                right = 0;
+            }
+        }
+        left = 0;
+        right = 0;
+        for(int i=s.Length-1;i>=0;i--){
+            if(s[i]=='(') left++;
+            else right++;
+            if(left==right) res = Math.Max(res,left+right);
+            else if(left>right){
+                left = 0;
+                right = 0;
+            }
+        }
+        return res;
+    }
+}
+```
+
+### 33 搜索旋转排序数组*
+
+#### 二分查找
+
+```c#
+public class Solution {
+    private int[] nums;
+    private int target;
+    private int res;
+    public int Search(int[] nums, int target) {
+        this.nums = nums;
+        this.target = target;
+        res = -1;
+        BinarySearch(0,nums.Length-1);
+        return res;
+    }
+    private void BinarySearch(int left,int right){
+        if(left>right) return;
+        int mid = (left+right)/2;
+        if(nums[mid]==target){
+            res = mid;
+            return;
+        }
+        if(nums[left]<=nums[mid]){
+            if(nums[left]<=target&&target<nums[mid]){
+                BinarySearch(left,mid-1);
+            }else{
+                BinarySearch(mid+1,right);
+            }
+        }
+        if(nums[left]>nums[mid]){
+            if(nums[mid]<target&&target<=nums[right]){
+                BinarySearch(mid+1,right);
+            }else{
+                BinarySearch(left,mid-1);
+            }
+        }
+    }
+}
+```
+
+### 39 组合总和*
+
+#### 回溯+剪枝
+
+```c#
+public class Solution {
+    private IList<IList<int>> res;
+    private int[] candidates;
+    private int target;
+    public IList<IList<int>> CombinationSum(int[] candidates, int target) {
+        res = new List<IList<int>>();
+        this.candidates = candidates;
+        this.target = target;
+        Array.Sort(candidates);
+        DFS(candidates.Length-1,new List<int>(),target);
+        return res;
+    }
+    private void DFS(int n,List<int> list,int remain){
+        if(remain==0){
+            int[] temp = list.ToArray();
+            res.Add(temp.ToList());
+            return;
+        }
+        int pre = -1;
+        for(int i=n;i>=0;i--){
+            if(remain<candidates[i]||candidates[i]==pre) continue;
+            pre = candidates[i];
+            list.Add(candidates[i]);
+            DFS(i,list,remain-candidates[i]);
+            list.RemoveAt(list.Count-1);
+        }
+    }
+}
+```
+
+### 234 回文链表
+
+#### 双向列表
+
+```c#
+public class Solution {
+    public bool IsPalindrome(ListNode head) {
+        LinkedList<int> list = new LinkedList<int>();
+        while(head!=null){
+            list.AddLast(head.val);
+            head = head.next;
+        }
+        while(list.Count>1){
+            if(list.First.Value!=list.Last.Value) return false;
+            list.RemoveFirst();
+            list.RemoveLast(); 
+        }
+        return true;
+    }
+}
+```
+
+#### 递归*
+
+```c#
+public class Solution {
+    private ListNode left;
+    public bool IsPalindrome(ListNode head) {
+        left = head;
+        return Method(head);
+    }
+    private bool Method(ListNode right){
+        if(right==null) return true;
+        bool res = Method(right.next)&&(left.val==right.val);
+        left = left.next;
+        return res;
+    }
+}
+```
+
+## 2.5
+
+### 101 对称二叉树
+
+#### 递归
+
+```c#
+public class Solution {
+    public bool IsSymmetric(TreeNode root) {
+        if(root==null) return true;
+        return Method(root.left,root.right);
+    }
+    private bool Method(TreeNode a,TreeNode b){
+        if(a==null||b==null){
+            if(a==null&&b==null) return true;
+            else return false;
+        }
+        if(a.val!=b.val) return false;
+        return Method(a.left,b.right)&&Method(a.right,b.left);
+    }
+}
+```
+
+#### 迭代(Queue)
+
+```c#
+public class Solution {
+    public bool IsSymmetric(TreeNode root) {
+        if(root==null) return true;
+        Queue<TreeNode> queue = new Queue<TreeNode>();
+        queue.Enqueue(root.left);
+        queue.Enqueue(root.right);
+        while(queue.Count!=0){
+            TreeNode a = queue.Dequeue();
+            TreeNode b = queue.Dequeue();
+            if(a==null||b==null){
+                if(a==null&&b==null) continue;
+                else return false;
+            }
+            if(a.val!=b.val) return false;
+            queue.Enqueue(a.left);
+            queue.Enqueue(b.right);
+            queue.Enqueue(a.right);
+            queue.Enqueue(b.left);
+        }
+        return true;
+    }
+}
+```
+
+### 96 不同的二叉搜索树
+
+#### 动态规划
+
+```c#
+public class Solution {
+    //m(1<=m<=n)为root，1-(m-1)为左子树，(m+1)-n为右子树
+    //dp[i]：i个节点二叉搜索树的种树
+    public int NumTrees(int n) {
+        int[] dp = new int[n+1];
+        dp[0] = 0;
+        dp[1] = 1;
+        for(int i=2;i<=n;i++){
+            for(int j=1;j<=i;j++){
+                if(j==1||j==i) dp[i]+=dp[i-1];
+                else dp[i]+=(dp[j-1]*dp[i-j]);
+            }
+        }
+        return dp[n];
+    }
+}
+```
+
+## 2.7 
+
+### 139 单词拆分
+
+#### 记忆化回溯
+
+```c#
+public class Solution {
+    private string s;
+    private IList<string> wordDict;
+    private Dictionary<int,bool> dict;
+    public bool WordBreak(string s, IList<string> wordDict) {
+        this.s = s;
+        this.wordDict = wordDict;
+        dict = new Dictionary<int,bool>();
+        return DFS(0);
+    }
+    //当前从n开始匹配
+    private bool DFS(int n){
+        if(n==s.Length) return true;
+        if(dict.ContainsKey(n)) return false;
+        for(int i=n;i<s.Length;i++){
+            if(wordDict.Contains(s[n..(i+1)])&&!dict.ContainsKey(i+1)){
+                if(DFS(i+1)) return true;
+                dict.Add((i+1),false);
+            }
+        }
+        return false;
+    }
+}
+```
+
+#### 动态规划
+
+```c#
+public class Solution {
+    public bool WordBreak(string s, IList<string> wordDict) {
+        bool[] dp = new bool[s.Length+1];
+        dp[0] = true;
+        for(int i=1;i<=s.Length;i++){
+            for(int j=0;j<i;j++){
+                if(!dp[j]) continue;
+                if(wordDict.Contains(s.Substring(j,(i-j)))){
+                    dp[i] = true;
+                    break;
+                }
+            }
+        }
+        return dp[s.Length];
+    }
+}
+```
+
+### 448 找到所有数组中消失的数字
+
+```c#
+public class Solution {
+    public IList<int> FindDisappearedNumbers(int[] nums) {
+        Array.Sort(nums);
+        IList<int> list = new List<int>();
+        int num = 1;
+        for(int i=0;i<nums.Length;i++){
+            if(nums[i]==num) num++;
+            if(nums[i]>num){
+                while(num!=nums[i]) list.Add(num++);
+                num++;
+            }
+        }
+        while(nums.Length>=num) list.Add(num++);
+        return list;
+    }
+}
+```
+
+### 75 颜色分类
+
+#### 快排
+
+```c#
+public class Solution {
+    private int[] nums;
+    public void SortColors(int[] nums) {
+        this.nums = nums;
+        QuickSort(0,nums.Length-1);
+    }
+    private void QuickSort(int left,int right){
+        if(left>=right) return;
+        int mid = PartSort(left,right);
+        QuickSort(left,mid-1);
+        QuickSort(mid+1,right);
+    }
+    private int PartSort(int left,int right){
+        int temp = nums[left];
+        while(left<right){
+            while(left<right&&nums[right]>=temp) right--;
+            Swap(left,right);
+            while(left<right&&nums[left]<=temp) left++;
+            Swap(left,right);
+        }
+        nums[left] = temp;
+        return left;
+    }
+    private void Swap(int a,int b){
+        int temp = nums[a];
+        nums[a] = nums[b];
+        nums[b] = temp;
+    }
+}
+```
+
+#### 双指针
+
+```c#
+public class Solution {
+    public void SortColors(int[] nums) {
+        int left = 0;
+        int right = nums.Length-1;
+        for(int i=0;i<=right;i++){
+            if(nums[i]==0){
+                Swap(nums,left,i);
+                left++;
+            }
+            if(nums[i]==2){
+                Swap(nums,i,right);
+                right--;
+                if(nums[i]!=1) i--;
+            }
+        }
+    }
+    private void Swap(int[] nums,int a,int b){
+        int temp = nums[a];
+        nums[a] = nums[b];
+        nums[b] = temp;
+    }
+}
+```
+
+### 560 和为K的子数组
+
+```c#
+public class Solution {
+    public int SubarraySum(int[] nums, int k) {
+        int count = 0;
+        int[] sum = new int[nums.Length];
+        for(int i=0;i<nums.Length;i++){
+            if(i==0) sum[i] = nums[i];
+            else sum[i] = sum[i-1]+nums[i];
+            if(sum[i]==k) count++;
+            for(int j=0;j<i;j++){
+                if(sum[i]-sum[j]==k) count++;
+            }
+        }
+        return count;
+    }
+}
+```
 
